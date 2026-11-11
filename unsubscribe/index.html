@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unsubscribe | Connects</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/img/icon.svg" type="image/svg+xml">
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eef1fb;color:#1f2350;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{max-width:420px;margin:24px;padding:32px;background:#fff;border-radius:28px;border:1px solid #e1e4f4;text-align:center}
+    h1{font-size:24px;margin:16px 0 8px}
+    p{color:#4a4f7a;line-height:1.6;margin:0 0 20px}
+    button{font:inherit;font-weight:600;color:#fff;background:#1f2350;border:0;border-radius:999px;padding:12px 26px;cursor:pointer}
+    button[disabled]{opacity:.6;cursor:default}
+    a{color:#3f4fc4}
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/img/logo-on-light.svg" alt="Connects" width="122" height="33">
+    <h1 id="title">Stop emails from Connects?</h1>
+    <p id="text">Press the button and you will not hear from us again.</p>
+    <button id="go" type="button">Unsubscribe</button>
+  </main>
+  <script>
+    var API = 'https://npftdlprbrowztsdqxll.supabase.co/functions/v1/outreach-unsub';
+    var t = new URLSearchParams(location.search).get('t') || '';
+    var title = document.getElementById('title');
+    var text = document.getElementById('text');
+    var go = document.getElementById('go');
+    function done(heading, message) {
+      title.textContent = heading;
+      text.textContent = message;
+      go.remove();
+    }
+    if (!/^[0-9a-f-]{36}$/i.test(t)) {
+      done('This link is not complete', 'Reply to the email with the word "unsubscribe" and we will remove you by hand.');
+    }
+    go.addEventListener('click', function () {
+      go.disabled = true;
+      go.textContent = 'Working...';
+      fetch(API + '?t=' + encodeURIComponent(t), { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j && j.ok) done('You are unsubscribed', 'We will not email you again. Sorry for the interruption.');
+          else throw new Error('failed');
+        })
+        .catch(function () {
+          go.disabled = false;
+          go.textContent = 'Try again';
+          text.textContent = 'That did not work. Try again, or reply to the email with the word "unsubscribe".';
+        });
+    });
+  </script>
+</body>
+</html>
